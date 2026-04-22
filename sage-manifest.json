@@ -1,0 +1,18 @@
+{
+  "name": "Permission Probe",
+  "version": "0.2.0",
+  "permissions": {
+    "network": {
+      "whitelist": {
+        "required": ["https://api.coinset.org"],
+        "optional": ["https://www.coinset.org", "wss://api.coinset.org"]
+      }
+    },
+    "capabilities": {
+      "required": ["persistent_storage"],
+      "optional": [
+        "wallet.send_xch"
+      ]
+    }
+  }
+}

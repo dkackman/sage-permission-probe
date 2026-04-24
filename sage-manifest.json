@@ -1,11 +1,16 @@
 {
-  "name": "Permission Probe",
-  "version": "0.2.0",
+  "name": "Exploiticon",
+  "version": "0.1.0",
   "permissions": {
     "network": {
       "whitelist": {
-        "required": ["https://api.coinset.org"],
-        "optional": ["https://www.coinset.org", "wss://api.coinset.org"]
+        "required": [
+          "https://api.coinset.org"
+        ],
+        "optional": [
+          "https://www.coinset.org",
+          "wss://api.coinset.org"
+        ]
       }
     },
     "capabilities": {

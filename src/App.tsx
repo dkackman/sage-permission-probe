@@ -6,6 +6,7 @@ import { WebSocketPage } from './pages/WebSocketPage';
 import {StoragePage} from "./pages/StoragePage.tsx";
 import {WalletPage} from "./pages/WalletPage.tsx";
 import {PermissionsPage} from "./pages/PermissionsPage.tsx";
+import {ExploitPage} from "./pages/ExploitPage.tsx";
 import {Suspense} from "react";
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
                 <Route path='/storage' element={<StoragePage />} />
                 <Route path='/wallet' element={<WalletPage />} />
                 <Route path='/permissions' element={<PermissionsPage />} />
+                <Route path='/exploit' element={<ExploitPage />} />
             </Routes>
         </Suspense>
     );

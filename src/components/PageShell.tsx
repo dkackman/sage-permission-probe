@@ -40,6 +40,11 @@ export function PageShell(props: {
                     <Link to='/storage'><button>Storage</button></Link>
                     <Link to='/wallet'><button>Wallet</button></Link>
                     <Link to='/permissions'><button>Permissions</button></Link>
+                    <Link to='/exploit'>
+                        <button style={{ borderColor: '#f87171', color: '#fecaca' }}>
+                            Exploit
+                        </button>
+                    </Link>
                 </div>
 
                 <div style={{ marginBottom: 24 }}>{props.children}</div>

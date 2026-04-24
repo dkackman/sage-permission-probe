@@ -8,7 +8,7 @@
     "sage:finalize": "sage-app finalize-manifest --source ./sage-manifest.json --dist ./dist",
     "build": "tsc -b && vite build && pnpm sage:finalize",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --port 3666"
   },
   "dependencies": {
     "react": "^19.2.4",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
-    "@sage-app/sdk": "file:../sage/packages/sage-app-sdk",
+    "@sage-app/sdk": "file:../../Hadamcik/sage/packages/sage-app-sdk",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

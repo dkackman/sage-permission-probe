@@ -1,17 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-    formatSageError,
-    getSageClientSync,
-    hasSageBridge,
-    type SageAppInfo,
-    type SageGrantedCapabilitiesChangeEvent,
-    type SageGrantedNetworkWhitelistChangeEvent,
-    type SageRequestedNetworkWhitelistEntry,
+    type AppGetInfoResult,
+    formatSageError, type GrantedCapabilitiesChangeEvent, type GrantedNetworkWhitelistChangeEvent,
+    hasSageBridge, type SageNetworkPermissionTarget,
+    type SageRequestedCapabilities, type SageRequestedNetworkWhitelist, type UserBridgeCapability,
 } from '@sage-app/sdk';
 import { PageShell } from '../components/PageShell';
 import { addLog } from '../lib/logStore';
+import {useSageClient} from "../hooks/useSageClient.ts";
 
-function entryKey(e: SageRequestedNetworkWhitelistEntry) {
+function entryKey(e: SageNetworkPermissionTarget) {
     return `${e.scheme}://${e.host}`;
 }
 
@@ -34,18 +32,26 @@ function preStyle(): React.CSSProperties {
 }
 
 export function PermissionsPage() {
-    const [info, setInfo] = useState<SageAppInfo | null>(null);
+    const [info, setInfo] = useState<AppGetInfoResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [requestingCapability, setRequestingCapability] = useState<string | null>(null);
     const [requestingNetwork, setRequestingNetwork] = useState<string | null>(null);
 
-    const requestedCaps = useMemo(
-        () => info?.requestedPermissions?.capabilities ?? {},
+    const sage = useSageClient();
+
+    const requestedCaps: SageRequestedCapabilities = useMemo(
+        () => info?.requestedPermissions?.capabilities ?? {
+            required: [],
+            optional: []
+        },
         [info],
     );
 
-    const requestedNetwork = useMemo(
-        () => info?.requestedPermissions?.network?.whitelist ?? {},
+    const requestedNetwork: SageRequestedNetworkWhitelist = useMemo(
+        () => info?.requestedPermissions?.network?.whitelist ?? {
+            required: [],
+            optional: []
+        },
         [info],
     );
 
@@ -72,7 +78,6 @@ export function PermissionsPage() {
 
         try {
             addLog('permissions.refresh: START', 'info');
-            const sage = getSageClientSync();
             const next = await sage.app.getInfo();
             setInfo(next);
             addLog(
@@ -88,13 +93,12 @@ export function PermissionsPage() {
         }
     }
 
-    async function requestCapability(capability: string) {
+    async function requestCapability(capability: UserBridgeCapability) {
         setRequestingCapability(capability);
 
         try {
             addLog(`requestCapabilityGrant(${capability}): START`, 'info');
 
-            const sage = getSageClientSync();
             const result = await sage.app.requestCapabilityGrant({
                 capability,
             });
@@ -115,14 +119,13 @@ export function PermissionsPage() {
         }
     }
 
-    async function requestNetwork(entry: SageRequestedNetworkWhitelistEntry) {
+    async function requestNetwork(entry: SageNetworkPermissionTarget) {
         const key = entryKey(entry);
         setRequestingNetwork(key);
 
         try {
             addLog(`requestNetworkWhitelistGrant(${key}): START`, 'info');
 
-            const sage = getSageClientSync();
             const result = await sage.app.requestNetworkWhitelistGrant({
                 entry,
             });
@@ -161,12 +164,10 @@ export function PermissionsPage() {
             return;
         }
 
-        const sage = getSageClientSync();
-
         addLog('permissions.listeners: subscribing', 'info');
 
         const offCaps = sage.app.onGrantedCapabilitiesChange(
-            (event: SageGrantedCapabilitiesChangeEvent) => {
+            (event: GrantedCapabilitiesChangeEvent) => {
                 addLog(
                     `onGrantedCapabilitiesChange: ${JSON.stringify(event, null, 2)}`,
                     'info',
@@ -184,7 +185,7 @@ export function PermissionsPage() {
         );
 
         const offNet = sage.app.onGrantedNetworkWhitelistChange(
-            (event: SageGrantedNetworkWhitelistChangeEvent) => {
+            (event: GrantedNetworkWhitelistChangeEvent) => {
                 addLog(
                     `onGrantedNetworkWhitelistChange: ${JSON.stringify(event, null, 2)}`,
                     'info',

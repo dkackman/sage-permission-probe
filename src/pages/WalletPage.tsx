@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
     formatSageError,
-    getSageClientSync,
-    hasSageBridge,
-    type SageWalletSendXchRequest,
+    hasSageBridge, type WalletSendXchParams,
 } from '@sage-app/sdk';
 import { PageShell } from '../components/PageShell';
 import { addLog } from '../lib/logStore';
+import {useSageClient} from "../hooks/useSageClient.ts";
 
 function defaultFormatResult<T>(result: T): string {
     if (
@@ -49,6 +48,7 @@ export function WalletPage() {
     const [fee, setFee] = useState('0');
     const [memosText, setMemosText] = useState('');
     const [clawbackText, setClawbackText] = useState('');
+    const sage = useSageClient();
 
     useEffect(() => {
         void (async () => {
@@ -58,7 +58,6 @@ export function WalletPage() {
             }
 
             try {
-                const sage = getSageClientSync();
                 const granted = await sage.app.getCapabilities();
                 setGrantedCapabilities(granted);
                 addLog(
@@ -71,7 +70,7 @@ export function WalletPage() {
                 setPermissionsLoaded(true);
             }
         })();
-    }, []);
+    }, [sage.app]);
 
     const canSendXch = grantedCapabilities.includes('wallet.send_xch');
 
@@ -96,7 +95,7 @@ export function WalletPage() {
         return Math.floor(parsed);
     }, [clawbackText]);
 
-    const requestPreview: SageWalletSendXchRequest = {
+    const requestPreview: WalletSendXchParams = {
         address,
         amount,
         fee,
@@ -221,7 +220,6 @@ export function WalletPage() {
                             void run(
                                 'wallet.getCapabilities',
                                 async () => {
-                                    const sage = getSageClientSync();
                                     const granted = await sage.app.getCapabilities();
                                     setGrantedCapabilities(granted);
                                     return granted;
@@ -238,8 +236,6 @@ export function WalletPage() {
                             void run(
                                 'wallet.sendXch',
                                 async () => {
-                                    const sage = getSageClientSync();
-
                                     return await sage.wallet.sendXch({
                                         address,
                                         amount,

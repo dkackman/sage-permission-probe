@@ -9,8 +9,13 @@
       }
     },
     "capabilities": {
-      "required": ["persistent_storage"],
+      "required": [],
       "optional": [
+        "app.get_info",
+        "app.get_capabilities",
+        "app.request_capability_grant",
+        "app.request_network_whitelist_grant",
+        "persistent_storage",
         "wallet.send_xch"
       ]
     }

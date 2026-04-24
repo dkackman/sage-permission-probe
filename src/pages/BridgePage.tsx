@@ -1,6 +1,7 @@
-import { createSageClient, formatSageError } from '@sage-app/sdk';
+import { formatSageError } from '@sage-app/sdk';
 import { PageShell } from '../components/PageShell';
 import { addLog } from '../lib/logStore';
+import {useSageClient} from "../hooks/useSageClient.ts";
 
 async function run(name: string, fn: () => Promise<unknown>) {
     try {
@@ -14,13 +15,14 @@ async function run(name: string, fn: () => Promise<unknown>) {
 }
 
 export function BridgePage() {
+    const sage = useSageClient();
+
     return (
         <PageShell title='Bridge' subtitle='Basic Sage bridge tests'>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button
                     onClick={() => {
                         void run('bridgePing', async () => {
-                            const sage = await createSageClient();
                             return await sage.app.bridgePing();
                         });
                     }}
@@ -31,7 +33,6 @@ export function BridgePage() {
                 <button
                     onClick={() => {
                         void run('getInfo', async () => {
-                            const sage = await createSageClient();
                             return await sage.app.getInfo();
                         });
                     }}
@@ -42,7 +43,6 @@ export function BridgePage() {
                 <button
                     onClick={() => {
                         void run('getCapabilities', async () => {
-                            const sage = await createSageClient();
                             return await sage.app.getCapabilities();
                         });
                     }}

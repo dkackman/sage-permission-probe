@@ -1,11 +1,7 @@
 import { Link } from 'react-router-dom';
 import { LogPanel } from './LogPanel';
+import { EXPLOITS } from '../exploits';
 import type { ReactNode } from 'react';
-
-// Add an entry here for each new exploit page.
-const EXPLOITS: { label: string; path: string }[] = [
-    { label: 'Approval Flood', path: '/approval-flood' },
-];
 
 export function PageShell(props: {
     title: string;
@@ -42,7 +38,7 @@ export function PageShell(props: {
                     {EXPLOITS.map((e) => (
                         <Link key={e.path} to={e.path}>
                             <button style={{ borderColor: '#f87171', color: '#fecaca' }}>
-                                {e.label}
+                                {e.title}
                             </button>
                         </Link>
                     ))}

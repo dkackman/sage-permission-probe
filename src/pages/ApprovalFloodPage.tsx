@@ -95,7 +95,7 @@ async function checkCapabilities(sage: ReturnType<typeof useSageClient>) {
     }
 }
 
-export function ExploitPage() {
+export function ApprovalFloodPage() {
     const sage = useSageClient();
     const bridge = hasSageBridge();
 

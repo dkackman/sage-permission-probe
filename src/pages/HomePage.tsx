@@ -1,43 +1,17 @@
 import { Link } from 'react-router-dom';
 import { LogPanel } from '../components/LogPanel';
+import { EXPLOITS } from '../exploits';
+import type { Exploit, Severity } from '../exploits';
 
-type Severity = 'high' | 'medium' | 'low';
+type CategoryGroup = { label: string; exploits: Exploit[] };
 
-type ExploitEntry = {
-    title: string;
-    path: string;
-    severity: Severity;
-    description: string;
-    hostLocation: string;
-};
-
-type Category = {
-    label: string;
-    exploits: ExploitEntry[];
-};
-
-// Registry of all exploit demonstrations, grouped by vulnerability class.
-// Add a new entry here when adding a new exploit page.
-const CATEGORIES: Category[] = [
-    {
-        label: 'Dialog / Approval',
-        exploits: [
-            {
-                title: 'Approval Dialog Flood',
-                path: '/approval-flood',
-                severity: 'high',
-                description:
-                    'Fires N simultaneous requestCapabilityGrant calls before the user can dismiss the first dialog. No server-side rate limiting or deduplication.',
-                hostLocation: 'sage-apps/src/bridge/mod.rs:427–442',
-            },
-        ],
-    },
-    // Future categories — uncomment and populate as exploits are added:
-    // { label: 'Capability Escalation', exploits: [] },
-    // { label: 'Network / SSRF', exploits: [] },
-    // { label: 'Storage', exploits: [] },
-    // { label: 'DoS / Resource Exhaustion', exploits: [] },
-];
+const CATEGORIES: CategoryGroup[] = Object.values(
+    EXPLOITS.reduce<Record<string, CategoryGroup>>((acc, e) => {
+        if (!acc[e.category]) acc[e.category] = { label: e.category, exploits: [] };
+        acc[e.category].exploits.push(e);
+        return acc;
+    }, {}),
+);
 
 const SEVERITY_COLOR: Record<Severity, string> = {
     high: '#f87171',
@@ -45,7 +19,7 @@ const SEVERITY_COLOR: Record<Severity, string> = {
     low: '#4ade80',
 };
 
-function ExploitCard({ exploit }: { exploit: ExploitEntry }) {
+function ExploitCard({ exploit }: { exploit: Exploit }) {
     return (
         <div
             style={{

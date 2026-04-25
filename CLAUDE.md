@@ -4,9 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A React/Vite/TypeScript Sage app ("Exploiticon") intended as a **community exploit demonstration and test harness** for the [Sage](https://github.com/xch-gallery/sage) wallet host application. The goal is a tool where contributors can add new exploit demonstrations, each targeting a specific class of vulnerability in the Sage bridge/host. It is for authorized security research only — not production use.
+A React/Vite/TypeScript Sage app ("Exploiticon") that serves two related purposes:
 
-Each exploit is self-contained: it documents the vulnerable host-side code, demonstrates the attack interactively, and proposes a mitigation.
+1. **Exploit demonstration and test harness** — a framework where contributors can add self-contained exploit pages, each targeting a specific class of vulnerability in the Sage bridge/host. Each page documents the vulnerable host-side code, demonstrates the attack interactively, and proposes a mitigation.
+
+2. **Red team tool** — a structured environment for probing the Sage host/bridge surface to discover vulnerabilities that could allow a malicious Sage app to gain escalated privileges, bypass capability restrictions, or otherwise abuse end users (e.g. draining funds, exfiltrating data, manipulating wallet state without consent).
+
+The attack surface of primary interest is the trust boundary between an untrusted Sage app (running in a sandboxed webview) and the privileged Sage host process. Exploits worth investigating include: capability escalation beyond what the user granted, SSRF/network abuse via the host's proxy, storage snooping across app boundaries, UI redressing / approval fatigue, and DoS against the host event loop.
+
+This is for authorized security research and responsible disclosure only — not production use.
 
 ## Commands
 

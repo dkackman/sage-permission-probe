@@ -4,13 +4,8 @@
   "permissions": {
     "network": {
       "whitelist": {
-        "required": [
-          "https://api.coinset.org"
-        ],
-        "optional": [
-          "https://www.coinset.org",
-          "wss://api.coinset.org"
-        ]
+        "required": ["https://api.coinset.org"],
+        "optional": ["https://www.coinset.org", "wss://api.coinset.org"]
       }
     },
     "capabilities": {
